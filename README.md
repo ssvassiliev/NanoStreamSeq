@@ -31,3 +31,6 @@ WORK_DIR="$SCRATCH/workdir"
 POD5_DIR="demopod5"
 MODEL="models/dna_r10.4.1_e8.2_400bps_sup@v5.2.0/"
 '''
+
+Data:
+/project/def-idjoly/ETS/20250724_1127_MN40896_FAY04157_b1ab64dd/00_basecaller/pod5_skip

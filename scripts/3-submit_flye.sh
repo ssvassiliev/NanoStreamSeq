@@ -22,7 +22,7 @@ if [ -z "$INPUT" ] || [ -z "$DEPENDENCY" ] || [ -z "$WORKDIR" ]; then
     usage
 fi
 
-if [[ "$DEPENDENCY" == "NaN" ]]; then
+if [[ "$DEPENDENCY" == "---" ]]; then
     sbatch_cmd="sbatch"
 else
     sbatch_cmd="sbatch --dependency=afterok:$DEPENDENCY"
