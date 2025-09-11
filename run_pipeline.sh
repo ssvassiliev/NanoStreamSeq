@@ -6,7 +6,8 @@ MODEL=models/dna_r10.4.1_e8.2_400bps_sup\@v5.2.0/
 
 JID1=NaN
 JID2A=NaN
-JID2B=Nan
+JID2B=NaN
+JID3=NaN
 
 if [[ ! -f "$WORK_DIR/calls.fastq" ]]; then
     echo "++ File calls.fastq not found — submitting basecaller ++"
@@ -27,5 +28,12 @@ if [[ ! -f "$WORK_DIR/corrected_reads.fasta" ]]; then
    JID2B=$(./scripts/2b-submit_correct-gpu_stage.sh -w $WORK_DIR -i calls.fastq -a "$JID2A" | awk '{print $4}')
 else
     echo "-- Skipping correction GPU stage — $WORK_DIR/corrected_reads.fasta already exists.--"
+fi
+
+if [[ ! -d "$WORK_DIR/out_nano" ]]; then
+    echo "++ Directory out_nano not found — submitting assembly ++"
+   JID3=$(./scripts/3-submit_flye.sh -w $WORK_DIR -i corrected_reads.fasta -a "$JID2B" | awk '{print $4}')
+else
+    echo "-- Skipping assemby — $WORK_DIR/out_nano already exists.--"
 fi
 
