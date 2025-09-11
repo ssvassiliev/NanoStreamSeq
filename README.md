@@ -41,8 +41,40 @@ Output files are created in WORK_DIR:
 1. calls.fastq
 2. overlaps.paf
 3. corrected_reads.fasta
-4. out_dir/
+4. out_nano/assembly.fasta
 
 
 #### Seq Data:
 /project/def-idjoly/ETS/20250724_1127_MN40896_FAY04157_b1ab64dd/00_basecaller/pod5_skip
+
+## RepeatMasker
+### Download the required dfam databases
+
+mkdir -p famdb
+cd famdb
+wget https://www.dfam.org/releases/current/families/FamDB/dfam39_full.0.h5.gz
+wget https://www.dfam.org/releases/current/families/FamDB/dfam39_full.16.h5.gz
+
+cd -
+famdb.py -i famdb info
+
+RepeatMasker looks for darabases only in the installation directory. 
+For this reason it must be installed in user's account.
+
+### Add partitions (root partition is preonstalled)
+cp famdb/dfam39_full.16.h5 $EBROOTREPEATMASKER/Libraries/famdb/
+
+### Example submission script:
+
+#!/bin/bash
+#SBATCH -c8
+#SBATCH --mem-per-cpu=4000
+#SBATCH --time=6:0:0
+
+module load repeatmasker
+QUERY=$SCRATCH/workdir/out_nano/assembly.fasta
+
+RepeatMasker \
+    -parallel $(( ${SLURM_CPUS_PER_TASK:-1} / 4 )) \
+    --species fungi \
+    $QUERY
