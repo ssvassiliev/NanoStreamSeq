@@ -35,8 +35,10 @@ $sbatch_cmd << EOF
 #SBATCH --mem-per-cpu=4000 
 #SBATCH --time=12:0:0
 
-source $ROOTDIR/env-flye/bin/activate
+source $ROORDIR/env-flye/bin/activate
+
 cd $WORKDIR
+
 flye \
     --nano-corr $INPUT \
     --out-dir out_nano \
