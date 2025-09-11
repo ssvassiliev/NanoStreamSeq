@@ -35,7 +35,7 @@ $sbatch_cmd << EOF
 #SBATCH --mem-per-cpu=4000 
 #SBATCH --time=12:0:0
 
-source $ROORDIR/env-flye/bin/activate
+source $ROOTDIR/env-flye/bin/activate
 
 cd $WORKDIR
 
