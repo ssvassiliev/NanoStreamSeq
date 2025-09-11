@@ -72,7 +72,7 @@ Output files are created in WORK_DIR:
 #!/bin/bash
 #SBATCH -c8
 #SBATCH --mem-per-cpu=4000
-#SBATCH --time=6:0:0
+#SBATCH --time=1:0:0
 
 module load repeatmasker
 QUERY=$SCRATCH/workdir/out_nano/assembly.fasta
