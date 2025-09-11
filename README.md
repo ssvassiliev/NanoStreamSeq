@@ -14,6 +14,25 @@ module load dorado
 dorado download --model dna_r10.4.1_e8.2_400bps_sup@v5.2.0
 dorado download --model herro-v1
 
+### Install RepeatMasker
+#### Install repeatmasker module locally
+#### Download the required dfam databases
+
+mkdir -p famdb
+cd famdb
+wget https://www.dfam.org/releases/current/families/FamDB/dfam39_full.0.h5.gz
+wget https://www.dfam.org/releases/current/families/FamDB/dfam39_full.16.h5.gz
+
+cd -
+famdb.py -i famdb info
+
+RepeatMasker looks for darabases only in the installation directory. 
+For this reason it must be installed in user's account.
+
+#### Add partitions (root partition is preonstalled)
+cp famdb/dfam39_full.16.h5 $EBROOTREPEATMASKER/Libraries/famdb/
+
+
 ## Usage - pipeline submission script run_pipeline.sh 
 ### Example usage:
 
@@ -47,24 +66,8 @@ Output files are created in WORK_DIR:
 #### Seq Data:
 /project/def-idjoly/ETS/20250724_1127_MN40896_FAY04157_b1ab64dd/00_basecaller/pod5_skip
 
-## RepeatMasker
-### Download the required dfam databases
 
-mkdir -p famdb
-cd famdb
-wget https://www.dfam.org/releases/current/families/FamDB/dfam39_full.0.h5.gz
-wget https://www.dfam.org/releases/current/families/FamDB/dfam39_full.16.h5.gz
-
-cd -
-famdb.py -i famdb info
-
-RepeatMasker looks for darabases only in the installation directory. 
-For this reason it must be installed in user's account.
-
-### Add partitions (root partition is preonstalled)
-cp famdb/dfam39_full.16.h5 $EBROOTREPEATMASKER/Libraries/famdb/
-
-### Example submission script:
+### RepeatMasker submission script:
 
 #!/bin/bash
 #SBATCH -c8
