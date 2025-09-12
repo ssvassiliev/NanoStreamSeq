@@ -20,7 +20,7 @@ POD5_DIR="demopod5"
 MODEL="models/dna_r10.4.1_e8.2_400bps_sup@v5.2.0/"
 
 print_usage() {
-    echo "Usage: $0 [--workdir DIR] [--pod5dir DIR] [--model DIR]"
+    echo "Usage: $0 [--workdir DIR] [--pod5dir DIR] [--model]"
     cat << EOF
     Defaults
     WORK_DIR="$SCRATCH/workdir"
@@ -51,7 +51,7 @@ while true; do
 done
 
 # Initialize job IDs to NaN
-for var in JID1 JID2A JID2B JID3; do
+for var in JID1 JID2A JID2B JID3 JID4; do
     eval "$var=---"
 done
 
@@ -80,12 +80,25 @@ else
 fi
 
 # Assembly stage
-if [[ ! -d "$WORK_DIR/out_nano" ]]; then
-    echo "++ Directory out_nano not found — submitting assembly ++"
+if [[ ! -f "$WORK_DIR/out_nano/assembly.fasta" ]]; then
+    echo "++ File out_nano/assembly.fasta not found — submitting assembly ++"
     JID3=$(./scripts/3-submit_flye.sh -w "$WORK_DIR" -i corrected_reads.fasta -a "$JID2B" | awk '{print $4}')
 else
     echo "-- Skipping assembly — $WORK_DIR/out_nano already exists. --"
 fi
+
+
+# RepeatMasker stage
+shopt -s nullglob
+files=("$WORK_DIR"/out_nano/*.RMoutput)
+
+if (( ${#files[@]} == 0 )); then
+    echo "++ Directory $WORK_DIR/out_nano/*.RMoutput not found — submitting RepeatMasker ++"
+    JID4=$(./scripts/4-submit_repeatmasker.sh -w "$WORK_DIR/out_nano" -i assembly.fasta -a "$JID3" | awk '{print $4}')
+else
+    echo "-- Skipping RepeatMasker — $WORK_DIR/out_nano/*.RMoutput already exists. --"
+fi
+
 
 # Summary
 echo
@@ -99,5 +112,6 @@ echo "JID1  (basecaller)          = $JID1"
 echo "JID2A (correction CPU)      = $JID2A"
 echo "JID2B (correction GPU)      = $JID2B"
 echo "JID3  (assembly)            = $JID3"
+echo "JID4  (repeatmasker)        = $JID4"
 echo "======================================"
 
