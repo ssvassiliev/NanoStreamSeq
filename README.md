@@ -55,12 +55,14 @@ Script submits jobs for the following steps:
 2. Correction, CPU stage (Dorado)
 3. Correction, GPU stage (Dorado)
 4. Assembling (Flye)
+5. RepeatMasker
 
 Output files are created in WORK_DIR:
 1. calls.fastq
 2. overlaps.paf
 3. corrected_reads.fasta
 4. out_nano/assembly.fasta
+5. out_nano/assembly.fasta.*.RMoutput/assembly.fasta.tbl
 
 
 #### Seq Data:
@@ -81,3 +83,7 @@ RepeatMasker \
     -parallel $(( ${SLURM_CPUS_PER_TASK:-1} / 4 )) \
     --species fungi \
     $QUERY
+
+Output:
+
+$SCRATCH/workdir/out_nano/assembly.fasta.preThuSep111351182025.RMoutput/assembly.fasta.tbl
