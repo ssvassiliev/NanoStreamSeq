@@ -3,7 +3,7 @@ ROOTDIR=$(pwd)
 
 usage() {
     printf "\nUsage:   %s -i <input> -w <workdir> -a <JobID>\n" 
-    printf "Example:   %s -i assembly.fasta -w workdir/out_nano -a "NaN"\n" 
+    printf "Example:   %s -i assembly.fasta -w workdir/out_nano -a "---"\n" 
     exit 1
 }
 
@@ -31,19 +31,11 @@ fi
 # feed script once into sbatch
 $sbatch_cmd << EOF
 #!/bin/bash
-#SBATCH -c8 --time 3:0:0 --mem-per-cpu=4000
+#SBATCH -c1 --time 1:0:0 --mem-per-cpu=4000
 
-module load apptainer
-apptainer run \
-   --env "WORKDIR=$WORKDIR" \
-   containers/busco.sif busco \
-   -m genome \
-   --offline \
-   --force \
-   --cpu \$SLURM_CPUS_PER_TASK \
-   -i $WORKDIR/assembly.fasta \
-   -o BUSCO_OUTPUT \
-   --out_path $WORKDIR \
-   -l busco_downloads/fungi_odb12 
+source env-quast/bin/activate
+quast.py \
+    -o $WORKDIR/out_nano/quast-results \
+    $WORKDIR/out_nano/$INPUT
 EOF
 

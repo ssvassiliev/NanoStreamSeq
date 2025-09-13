@@ -51,7 +51,7 @@ while true; do
 done
 
 # Initialize job IDs to NaN
-for var in JID1 JID2A JID2B JID3 JID4 JID5; do
+for var in JID1 JID2A JID2B JID3 JID4 JID5 JID6; do
     eval "$var=---"
 done
 
@@ -100,10 +100,18 @@ fi
 
 # 5. BUSCO
 if [[ ! -f "$WORK_DIR/out_nano/BUSCO_OUTPUT/short_summary.specific.fungi_odb12.BUSCO_OUTPUT.txt" ]]; then
-    echo "++ File short_summary.specific.fungi_odb12.BUSCO_OUTPUT.txt not found — submitting RepeatMasker ++"
+    echo "++ File short_summary.specific.fungi_odb12.BUSCO_OUTPUT.txt not found — submitting BUSCO ++"
     JID5=$(./scripts/5-submit_busco.sh -w "$WORK_DIR/out_nano" -i assembly.fasta -a "$JID3" | awk '{print $4}')
 else
     echo "-- Skipping BUSCO — short_summary.specific.fungi_odb12.BUSCO_OUTPUT.txt already exists. --"
+fi
+
+# 6. QUAST
+if [[ ! -f "$WORK_DIR/out_nano/quast_results/latest" ]]; then
+    echo "++ File /out_nano/quast_results/latest not found — submitting QUAST ++"
+    JID6=$(./scripts/6-submit_quast.sh -w "$WORK_DIR" -i assembly.fasta -a "$JID3" | awk '{print $4}')
+else
+    echo "-- Skipping QUAST — out_nano/quast_results/latest already exists. --"
 fi
 
 
@@ -121,5 +129,6 @@ echo "2b    (correction GPU)      = $JID2B"
 echo "3     (assembly)            = $JID3"
 echo "4     (repeatmasker)        = $JID4"
 echo "5     (BUSCO)               = $JID5"
+echo "6     (QUAST)               = $JID6"
 echo "======================================"
 
