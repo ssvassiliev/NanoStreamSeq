@@ -30,25 +30,12 @@ famdb.py -i famdb info
 cp famdb/dfam39_full.16.h5 $EBROOTREPEATMASKER/Libraries/famdb/
 
 ### Busco
-
+cd containers
 apptainer build busco.sif docker://ezlabgva/busco:v6.0.0_cv1
 mkdir busco_downloads
 cd busco_downloads
 wget https://busco-data.ezlab.org/v5/data/lineages/fungi_odb12.2025-07-01.tar.gz
 tar xf fungi_odb12.2025-07-01.tar.gz
-
-#!/bin/bash
-#SBATCH -c8 --time 6:0:0 --mem-per-cpu=4000
-
-module load appatiner
-
-apptainer run busco.sif busco -m genome\
- --offline \
- --cpu $SLURM_CPUS_PER_TASK \
- -i ../workdir/out_nano/assembly.fasta \
- -o BUSCO_OUTPUT\
- -l busco_downloads/lineages/fungi_odb12 
-
 
 
 ## Usage - pipeline submission script run_pipeline.sh 
@@ -77,8 +64,8 @@ Script submits jobs for the following steps:
 
 Output files are created in WORK_DIR:
 1. calls.fastq
-2. overlaps.paf
-3. corrected_reads.fasta
+2. overlaps.paf 
+3. corrected_reads.fasta 
 4. out_nano/assembly.fasta
 5. out_nano/assembly.fasta.*.RMoutput/assembly.fasta.tbl
 
