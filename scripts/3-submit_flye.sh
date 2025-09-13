@@ -33,7 +33,7 @@ $sbatch_cmd << EOF
 #!/bin/bash
 #SBATCH -c16 
 #SBATCH --mem-per-cpu=4000 
-#SBATCH --time=12:0:0
+#SBATCH --time=3:0:0
 
 source $ROOTDIR/env-flye/bin/activate
 
