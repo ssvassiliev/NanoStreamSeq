@@ -51,11 +51,11 @@ while true; do
 done
 
 # Initialize job IDs to NaN
-for var in JID1 JID2A JID2B JID3 JID4; do
+for var in JID1 JID2A JID2B JID3 JID4 JID5; do
     eval "$var=---"
 done
 
-# Basecaller stage
+# 1. Basecaller stage
 if [[ ! -f "$WORK_DIR/calls.fastq" ]]; then
     echo "++ File calls.fastq not found — submitting basecaller ++"
     JID1=$(./scripts/1-submit_basecaller.sh -m "$MODEL" -d "$POD5_DIR" -o "$WORK_DIR" | awk '{print $4}')
@@ -63,32 +63,31 @@ else
     echo "-- Skipping basecaller — $WORK_DIR/calls.fastq already exists --"
 fi
 
-# Correction CPU stage
-if [[ ! -f "$WORK_DIR/overlaps.paf" ]]; then
-    echo "++ File overlaps.paf not found — submitting correction CPU stage ++"
-    JID2A=$(./scripts/2a-submit_correct-cpu_stage.sh -w "$WORK_DIR" -i calls.fastq -a "$JID1" | awk '{print $4}')
-else
-    echo "-- Skipping correction CPU stage — $WORK_DIR/overlaps.paf already exists. --"
-fi
+# 2a. Correction CPU stage
+#if [[ ! -f "$WORK_DIR/overlaps.paf" ]]; then
+#    echo "++ File overlaps.paf not found — submitting correction CPU stage ++"
+#    JID2A=$(./scripts/2a-submit_correct-cpu_stage.sh -w "$WORK_DIR" -i calls.fastq -a "$JID1" | awk '{print $4}')
+#else
+#    echo "-- Skipping correction CPU stage — $WORK_DIR/overlaps.paf already exists. --"
+#fi
 
-# Correction GPU stage
-if [[ ! -f "$WORK_DIR/corrected_reads.fasta" ]]; then
-    echo "++ File corrected_reads.fasta not found — submitting correction GPU stage ++"
-    JID2B=$(./scripts/2b-submit_correct-gpu_stage.sh -w "$WORK_DIR" -i calls.fastq -a "$JID2A" | awk '{print $4}')
-else
-    echo "-- Skipping correction GPU stage — $WORK_DIR/corrected_reads.fasta already exists. --"
-fi
+# 2b. Correction GPU stage
+#if [[ ! -f "$WORK_DIR/corrected_reads.fasta" ]]; then
+#    echo "++ File corrected_reads.fasta not found — submitting correction GPU stage ++"
+#    JID2B=$(./scripts/2b-submit_correct-gpu_stage.sh -w "$WORK_DIR" -i calls.fastq -a "$JID2A" | awk '{print $4}')
+#else
+#    echo "-- Skipping correction GPU stage — $WORK_DIR/corrected_reads.fasta already exists. --"
+#fi
 
-# Assembly stage
+# 3. Assembly stage
 if [[ ! -f "$WORK_DIR/out_nano/assembly.fasta" ]]; then
     echo "++ File out_nano/assembly.fasta not found — submitting assembly ++"
-    JID3=$(./scripts/3-submit_flye.sh -w "$WORK_DIR" -i corrected_reads.fasta -a "$JID2B" | awk '{print $4}')
+    JID3=$(./scripts/3-submit_flye.sh -w "$WORK_DIR" -i calls.fastq -a "$JID1" | awk '{print $4}')
 else
-    echo "-- Skipping assembly — $WORK_DIR/out_nano already exists. --"
+    echo "-- Skipping assembly — $WORK_DIR/out_nano/assembly.fasta already exists. --"
 fi
 
-
-# RepeatMasker stage
+# 4. RepeatMasker stage
 shopt -s nullglob
 files=("$WORK_DIR"/out_nano/*.RMoutput)
 
@@ -97,6 +96,14 @@ if (( ${#files[@]} == 0 )); then
     JID4=$(./scripts/4-submit_repeatmasker.sh -w "$WORK_DIR/out_nano" -i assembly.fasta -a "$JID3" | awk '{print $4}')
 else
     echo "-- Skipping RepeatMasker — $WORK_DIR/out_nano/*.RMoutput already exists. --"
+fi
+
+# 5. BUSCO
+if [[ ! -f "$WORK_DIR/out_nano/BUSCO_OUTPUT/short_summary.specific.fungi_odb12.BUSCO_OUTPUT.txt" ]]; then
+    echo "++ File short_summary.specific.fungi_odb12.BUSCO_OUTPUT.txt not found — submitting RepeatMasker ++"
+    JID5=$(./scripts/5-submit_busco.sh -w "$WORK_DIR/out_nano" -i assembly.fasta -a "$JID3" | awk '{print $4}')
+else
+    echo "-- Skipping BUSCO — short_summary.specific.fungi_odb12.BUSCO_OUTPUT.txt already exists. --"
 fi
 
 
@@ -108,10 +115,11 @@ echo "POD5_DIR : $POD5_DIR"
 echo "MODEL    : $MODEL"
 echo
 echo "Submitted jobs:"
-echo "JID1  (basecaller)          = $JID1"
-echo "JID2A (correction CPU)      = $JID2A"
-echo "JID2B (correction GPU)      = $JID2B"
-echo "JID3  (assembly)            = $JID3"
-echo "JID4  (repeatmasker)        = $JID4"
+echo "1     (basecaller)          = $JID1"
+echo "2a    (correction CPU)      = $JID2A"
+echo "2b    (correction GPU)      = $JID2B"
+echo "3     (assembly)            = $JID3"
+echo "4     (repeatmasker)        = $JID4"
+echo "5     (BUSCO)               = $JID5"
 echo "======================================"
 
