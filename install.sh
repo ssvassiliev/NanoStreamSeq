@@ -65,7 +65,7 @@ pip install --no-index flye
 # Install Busco
 mkdir -p containers
 module load apptainer
-apptainer build cotainers/busco.sif docker://ezlabgva/busco:v6.0.0_cv1
+apptainer build containers/busco.sif docker://ezlabgva/busco:v6.0.0_cv1
 mkdir busco_downloads
 cd busco_downloads
 wget https://busco-data.ezlab.org/v5/data/lineages/fungi_odb12.2025-07-01.tar.gz
