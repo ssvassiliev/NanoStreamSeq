@@ -37,10 +37,8 @@ while getopts ":p:h" opt; do
     esac
 done
 
-  
-if [[ $(basename "$prefix") == "NanoStreamSeq" ]]; then
-    ROOT_DIR=$prefix
-else
+ROOT_DIR=$prefix  
+if [[ $(basename "$prefix") != "NanoStreamSeq" ]]; then
    mkdir -p $ROOT_DIR
    cd $ROOT_DIR
    git clone https://github.com/ssvassiliev/NanoStreamSeq.git
