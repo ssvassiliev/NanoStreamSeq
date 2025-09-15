@@ -1,13 +1,53 @@
 #!/bin/bash
+#!/usr/bin/env bash
 
-# Define installation directory
-ROOT_DIR=$SCRATCH/INSTALL_TEST
+show_help() {
+    cat << EOF
+Usage: $0 [OPTIONS]
 
-mkdir -p $ROOT_DIR
-cd $ROOT_DIR
-git clone https://github.com/ssvassiliev/NanoStreamSeq.git
+Options:
+  -p PREFIX   Set the prefix for installation directory (default: cwd)
+  -h          Show this help message and exit
+EOF
+}
 
-ROOT_DIR=$ROOT_DIR/NanoStreamSeq
+# default values
+prefix=`pwd`
+
+# parse options with getopts
+while getopts ":p:h" opt; do
+    case $opt in
+        p)
+            prefix="$OPTARG"
+            ;;
+        h)
+            show_help
+            exit 0
+            ;;
+        \?)
+            echo "Unknown option: -$OPTARG" >&2
+            show_help
+            exit 1
+            ;;
+        :)
+            echo "Option -$OPTARG requires an argument." >&2
+            show_help
+            exit 1
+            ;;
+    esac
+done
+
+  
+if [[ $(basename "$prefix") == "NanoStreamSeq" ]]; then
+    ROOT_DIR=$prefix
+else
+   mkdir -p $ROOT_DIR
+   cd $ROOT_DIR
+   git clone https://github.com/ssvassiliev/NanoStreamSeq.git
+   ROOT_DIR=$ROOT_DIR/NanoStreamSeq 
+fi
+
+echo "Installing in: $ROOT_DIR"
 
 cd $ROOT_DIR
 # Install Dorado models
@@ -26,6 +66,7 @@ pip install --no-index flye
 
 # Install Busco
 mkdir -p containers
+module load apptainer
 apptainer build cotainers/busco.sif docker://ezlabgva/busco:v6.0.0_cv1
 mkdir busco_downloads
 cd busco_downloads
@@ -43,10 +84,10 @@ rm -rf quast_5.3.0.tar.gz quast-quast_5.3.0
 
 
 # Install RepeatMasker
-#eb RepeatMasker-4.2.1-GCC-12.3.0.eb --rebuild
-#wget https://www.dfam.org/releases/current/families/FamDB/dfam39_full.16.h5.gz
-#gunzip dfam39_full.16.h5.gz
+eb RepeatMasker-4.2.1-GCC-12.3.0.eb --rebuild
+wget https://www.dfam.org/releases/current/families/FamDB/dfam39_full.16.h5.gz
+gunzip dfam39_full.16.h5.gz
 # Add famdb partitions (root partition comes with the module)
-#module load repeatmasker
-#cp dfam39_full.16.h5 $EBROOTREPEATMASKER/Libraries/famdb/
-#rm dfam39_full.16.h5.gz
+module load repeatmasker
+cp dfam39_full.16.h5 $EBROOTREPEATMASKER/Libraries/famdb/
+rm dfam39_full.16.h5.gz
