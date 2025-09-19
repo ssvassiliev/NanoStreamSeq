@@ -107,11 +107,11 @@ else
 fi
 
 # 6. QUAST
-if [[ ! -f "$WORK_DIR/out_nano/quast_results/latest" ]]; then
-    echo "++ File /out_nano/quast_results/latest not found — submitting QUAST ++"
+if [[ ! -f "$WORK_DIR/out_nano/quast-results/report.txt" ]]; then
+    echo "++ File out_nano/quast-results/report.txt not found — submitting QUAST ++"
     JID6=$(./scripts/6-submit_quast.sh -w "$WORK_DIR" -i assembly.fasta -a "$JID3" | awk '{print $4}')
 else
-    echo "-- Skipping QUAST — out_nano/quast_results/latest already exists. --"
+    echo "-- Skipping QUAST — out_nano/quast-results/report.txt already exists. --"
 fi
 
 
