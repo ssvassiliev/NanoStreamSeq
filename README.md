@@ -1,42 +1,53 @@
 # Scripts for automated basecalling, correction and genome assembly
-## Installation
+## INSTALLATION
+
+Change directory to the root directory of NanoStreamSeq
+
+ROOT_DIR=$SCRATCH
+
+cd $ROOT_DIR
+git clone https://github.com/ssvassiliev/NanoStreamSeq.git
+cd NanoStreamSeq
 
 ### Dorado models
-mkdir NanoStreamSeq/models
-cd NanoStreamSeq/models
+mkdir models
+cd models
 module load dorado
 dorado download --model dna_r10.4.1_e8.2_400bps_sup@v5.2.0
 dorado download --model herro-v1
 
 ### FLye
-cd NanoStreamSeq 
+cd - 
 module load python
 virtualenv env-flye
 source env-flye/bin/activate
 pip install --no-index flye
 
 ### RepeatMasker
-RepeatMasker must be installed locally because it looks for databases only in the installation directory.
+RepeatMasker must be installed locally because it looks for databases only in the installation directory. Root partition dfam39_full.0.h5 comes with the module.
 
 #### Download required famdb databases
-mkdir -p famdb
-cd famdb
-wget https://www.dfam.org/releases/current/families/FamDB/dfam39_full.0.h5.gz
 wget https://www.dfam.org/releases/current/families/FamDB/dfam39_full.16.h5.gz
-cd -
-famdb.py -i famdb info
-
+gunzip dfam39_full.16.h5.gz
 #### Add famdb partitions (root partition comes with the module)
-cp famdb/dfam39_full.16.h5 $EBROOTREPEATMASKER/Libraries/famdb/
+module load repeatmasker
+cp dfam39_full.16.h5 $EBROOTREPEATMASKER/Libraries/famdb/
+rm dfam39_full.16.h5.gz
 
 ### Busco
+mkdir -p containers
 cd containers
 apptainer build busco.sif docker://ezlabgva/busco:v6.0.0_cv1
-mkdir busco_downloads
-cd busco_downloads
+mkdir ../busco_downloads
+cd ../busco_downloads
 wget https://busco-data.ezlab.org/v5/data/lineages/fungi_odb12.2025-07-01.tar.gz
 tar xf fungi_odb12.2025-07-01.tar.gz
 
+### Quast
+wget https://github.com/ablab/quast/archive/refs/tags/quast_5.3.0.tar.gz
+tar xf quast_5.3.0.tar.gz
+pip install quast-quast_5.3.0/
+rm -rf quast-quast_5.3.0
 
 ## Usage - pipeline submission script run_pipeline.sh 
 ### Example usage:
@@ -58,18 +69,35 @@ model:    models/dna_r10.4.1_e8.2_400bps_sup@v5.2.0
 Script submits jobs for the following steps:
 1. Basecalling (Dorado)
 2. Correction, CPU stage (Dorado)
-3. Correction, GPU stage (Dorado)
-4. Assembling (Flye)
-5. RepeatMasker
+2. Correction, GPU stage (Dorado)
+3. Assembling (Flye)
+4. RepeatMasker
+5. BUSCO
+6. QUAST
 
-Output files are created in WORK_DIR:
+Output files (located in WORK_DIR):
 1. calls.fastq
 2. overlaps.paf 
-3. corrected_reads.fasta 
-4. out_nano/assembly.fasta
-5. out_nano/assembly.fasta.*.RMoutput/assembly.fasta.tbl
-
+2. corrected_reads.fasta 
+3. out_nano/assembly.fasta
+4. out_nano/assembly.fasta.*.RMoutput/assembly.fasta.tbl
+5. out_nano/BUSCO_OUTPUT/short_summary.specific.fungi_odb12.BUSCO_OUTPUT.txt
+6. out_nano/quast_results/latest
 
 #### Seq Data:
 /project/def-idjoly/ETS/20250724_1127_MN40896_FAY04157_b1ab64dd/00_basecaller/pod5_skip
+
+## Helixer
+
+apptainer build helixer.sif docker://gglyptodon/helixer-docker:helixer_v0.3.6_cuda_12.2.2-cudnn8
+
+### Download models:
+apptainer exec \
+    --bind /etc/ssl/certs/ca-bundle.crt:/etc/pki/tls/certs/ca-bundle.crt \
+    helixer.sif \
+    fetch_helixer_models.py -l fungi
+
+- saves models to:  $HOME/.local/share/Helixer/models
+- on fir works with GPU only from salloc 
+- container is incompatible with H100
 
