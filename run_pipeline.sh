@@ -12,30 +12,34 @@ set -euo pipefail
 #   ./pipeline.sh --workdir /scratch/$USER/run1 \
 #                 --pod5dir data/pod5 \
 #                 --model my_models/sup@v5.2.0/
+#                 --calls "calls-1.fastq calls-2.fastq"
 # ===============================================================
 
 # Defaults
 WORK_DIR="$SCRATCH/workdir"
 POD5_DIR="demopod5"
 MODEL="models/dna_r10.4.1_e8.2_400bps_sup@v5.2.0/"
+CALLS="calls.fastq"
 
 print_usage() {
-    echo "Usage: $0 [--workdir DIR] [--pod5dir DIR] [--model]"
+    echo "Usage: $0 [--workdir DIR] [--pod5dir DIR] [--model DIR] [--calls "FILE1 FILE2"]"
     cat << EOF
     Defaults
     WORK_DIR="$SCRATCH/workdir"
     POD5_DIR="demopod5"
     MODEL="models/dna_r10.4.1_e8.2_400bps_sup@v5.2.0/"
+    CALLS="calls-1.fastq calls-2.fastq"
 EOF
-    exit 1
 }
+
 
 # Parse options
 OPTS=$(getopt -o '' \
-    --long workdir:,pod5dir:,model:,help \
+    --long workdir:,pod5dir:,model:,calls:,help \
     -n 'parse-options' -- "$@")
 if [ $? != 0 ]; then
     print_usage
+    exit 1
 fi
 eval set -- "$OPTS"
 
@@ -44,11 +48,13 @@ while true; do
         --workdir) WORK_DIR="$2"; shift 2 ;;
         --pod5dir) POD5_DIR="$2"; shift 2 ;;
         --model)   MODEL="$2"; shift 2 ;;
-        --help)    print_usage ;;
+        --calls)   CALLS="$2"; shift 2 ;;
+        --help)    print_usage; exit 0 ;;
         --) shift; break ;;
-        *) echo "Unknown option $1"; print_usage ;;
+        *) echo "Unknown option $1"; print_usage; exit 1 ;;
     esac
 done
+
 
 # Initialize job IDs to NaN
 for var in JID1 JID2A JID2B JID3 JID4 JID5 JID6; do
@@ -56,11 +62,11 @@ for var in JID1 JID2A JID2B JID3 JID4 JID5 JID6; do
 done
 
 # 1. Basecaller stage
-if [[ ! -f "$WORK_DIR/calls.fastq" ]]; then
-    echo "++ File calls.fastq not found — submitting basecaller ++"
+if ! compgen -G $WORK_DIR/calls*.fastq > /dev/null; then
+    echo "++ File calls*.fastq not found — submitting basecaller ++"
     JID1=$(./scripts/1-submit_basecaller.sh -m "$MODEL" -d "$POD5_DIR" -o "$WORK_DIR" | awk '{print $4}')
 else
-    echo "-- Skipping basecaller — $WORK_DIR/calls.fastq already exists --"
+    echo "-- Skipping basecaller — $WORK_DIR/calls*.fastq already exists --"
 fi
 
 # 2a. Correction CPU stage
@@ -82,7 +88,7 @@ fi
 # 3. Assembly stage
 if [[ ! -f "$WORK_DIR/out_nano/assembly.fasta" ]]; then
     echo "++ File out_nano/assembly.fasta not found — submitting assembly ++"
-    JID3=$(./scripts/3-submit_flye.sh -w "$WORK_DIR" -i calls.fastq -a "$JID1" | awk '{print $4}')
+    JID3=$(./scripts/3-submit_flye.sh -w "$WORK_DIR" -i "$CALLS" -a "$JID1" | awk '{print $4}')
 else
     echo "-- Skipping assembly — $WORK_DIR/out_nano/assembly.fasta already exists. --"
 fi
@@ -121,6 +127,7 @@ echo "===== Pipeline submission summary ====="
 echo "WORK_DIR : $WORK_DIR"
 echo "POD5_DIR : $POD5_DIR"
 echo "MODEL    : $MODEL"
+echo "CALLS    : $CALLS"
 echo
 echo "Submitted jobs:"
 echo "1     (basecaller)          = $JID1"
