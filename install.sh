@@ -87,6 +87,7 @@ rm -f dfam39_full.16.h5.gz
 wget https://www.dfam.org/releases/current/families/FamDB/dfam39_full.16.h5.gz
 gunzip dfam39_full.16.h5.gz
 # Add famdb partitions (root partition comes with the module)
+module purge
 module load repeatmasker
 cp dfam39_full.16.h5 $EBROOTREPEATMASKER/Libraries/famdb/
 rm dfam39_full.16.h5.gz
