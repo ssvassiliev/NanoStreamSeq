@@ -84,10 +84,13 @@ rm -rf quast_5.3.0.tar.gz quast-quast_5.3.0
 # Install RepeatMasker
 eb RepeatMasker-4.2.1-GCC-12.3.0.eb --rebuild
 rm -f dfam39_full.16.h5.gz
+cd $SCRATCH
 wget https://www.dfam.org/releases/current/families/FamDB/dfam39_full.16.h5.gz
 gunzip dfam39_full.16.h5.gz
 # Add famdb partitions (root partition comes with the module)
 module purge
 module load repeatmasker
+# Full DB is > 36GB
 cp dfam39_full.16.h5 $EBROOTREPEATMASKER/Libraries/famdb/
-rm dfam39_full.16.h5.gz
+rm -rf dfam39_full.16.h5.gz dfam39_full.16.h5
+cd -
