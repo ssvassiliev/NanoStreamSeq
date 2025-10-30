@@ -188,19 +188,23 @@ apptainer exec \
 4. MEME/5.2.0
 
 #### Installation:
+PREFIX=/project/def-idjoly/ETS/software/
+cd $PREFIX
 git clone https://github.com/slt666666/NLRtracker
 cd NLRtracker
 #### Install R libraries 
 module load r-bundle-bioconductor/3.21
 #### Location of R libraries 
-PREFIX=`pwd`
-mkdir -p $PREFIX/R/$EBVERSIONR/
-export R_LIBS=$PREFIX/R/$EBVERSIONR/
+mkdir -p $PREFIX/NLRtracker/R/$EBVERSIONR/
+export R_LIBS=$PREFIX/NLRtracker/R/$EBVERSIONR/
 Rscript -e 'install.packages( "tidyverse", repos="https://cloud.r-project.org/")'
 
 #### Submission script:
 #!/bin/bash
 #SBATCH -c4 --mem-per-cpu=3000 --time=1:0:0
+
+PREFIX=/project/def-idjoly/ETS/software/
+export R_LIBS=$PREFIX/NLRtracker/R/$EBVERSIONR/
 
 module load \
     interproscan/5.73-104.0 \
@@ -215,9 +219,42 @@ module load \
 
 
 ## NLR-Annotator: https://github.com/steuernb/NLR-Annotator 
+Java - no installation needed. Load java module, clone repo and run .jar file.
 
 ## NLRexpress: https://github.com/eliza-m/NLRexpress
+Conda
+
 ## PRGminer: https://github.com/usubioinfo/PRGminer 
+#### It is CPU-only code, GPU disabled in __main.py__
+PREFIX=/project/def-idjoly/ETS/software/
+cd $PREFIX
+module load python mpi4py 
+virtualenv --no-download --clear env-prgminer 
+source env-prgminer/bin/activate
+git clone https://github.com/navduhan/PRGminer.git
+cd PRGminer/
+#### Fix python version
+sed -i 's/>=3\.8,<3\.11/>=3.8,<3.12/g' setup.py
+cd PRGminer/models
+#### Download models
+rm *.h5
+wget https://github.com/usubioinfo/PRGminer/raw/refs/heads/main/PRGminer/models/prgminer_phase1.h5
+wget https://github.com/usubioinfo/PRGminer/raw/refs/heads/main/PRGminer/models/prgminer_phase2.h5
+#### models were originally saved with TensorFlow 2.3
+cd $PREFIX/PRGminer
+pip install msgpack tensorflow==2.15.1
+pip install .
+
+#### Test
+#!/bin/bash
+#SBATCH -c2 --mem-per-cpu=3000 --time=1:0:0
+
+PREFIX=/project/def-idjoly/ETS/software/
+source $PREFIX/env-prgminer/bin/activate
+
+cd $PREFIX/PRGminer/tests/test_data/
+PRGminer -i sample.fasta -od results_phase1 -l Phase1
+
 ## Resistify: https://github.com/SwiftSeal/resistify
 
 ## TEtrimmer https://github.com/qjiangzhao/TEtrimmer
