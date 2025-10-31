@@ -177,7 +177,23 @@ apptainer exec \
 - on fir works with GPU only from salloc 
 - container is incompatible with H100
 
+Summary:
+
+1. Minimap2: module minimap2/2.28
+2. NLRtracker:  Installed 
+3. NLR-Annotator: Java - Load java module, clone repo and run .jar file.
+4. NLRexpress: Conda only
+5. PRGminer: Installed
+6. Resistify: Created apptainer image resistify-1.3.0.sif
+7. TEtrimmer: Created apptainer image tetrimmer-1.5.4.sif. TEtrimmer uses the TE consensus library from de novo TE annotation tools, like RepeatModeler or EDTA, as input. 
+8. EDTA2: Created apptainer image EDTA-2.2.2.sif
+9. RepeatModeler: module repeatmodeler/2.0.7
+8. DRAGO-API: Shell script to query DRAGO server, downloaded.
+
+
+
 ## Minimap2 
+Module available
 
 ## NLRtracker
 
@@ -257,11 +273,35 @@ PRGminer -i sample.fasta -od results_phase1 -l Phase1
 
 ## Resistify: https://github.com/SwiftSeal/resistify
 
+APPTAINER_CACHEDIR=./
+export APPTAINER_CACHEDIR
+apptainer build resistify-1.3.0.sif \
+    docker://quay.io/biocontainers/resistify:1.3.0--pyhdfd78af_0 
+rm -rf cache
+
 ## TEtrimmer https://github.com/qjiangzhao/TEtrimmer
+
+APPTAINER_CACHEDIR=./
+export APPTAINER_CACHEDIR
+apptainer build tetrimmer-1.5.4.sif \
+    docker://quay.io/biocontainers/tetrimmer:1.5.4--hdfd78af_0
+rm -rf cache
+#### Download pfam database
+
 - EDTA2 or RepeatModeler2 - create a list of repeats and use it as input to TEtrimmer  
 - manually annotate transposable elements
 
-## DRAGO-API https://github.com/sequentiabiotech/DRAGO-API
+APPTAINER_CACHEDIR=./
+export APPTAINER_CACHEDIR
+apptainer build EDTA-2.2.2.sif \
+    docker://quay.io/biocontainers/edta:2.2.2--hdfd78af_1
+rm -rf cache
 
-O
+## DRAGO-API https://github.com/sequentiabiotech/DRAGO-API
+Shell script to query DRAGO server.
+
+
+## Remove host reads — map to reference and keep unmapped reads.
+
+minimap2 -ax map-ont host.fa reads.fastq | samtools view -b -f 4 - | samtools fastq - > clean.fastq
 
