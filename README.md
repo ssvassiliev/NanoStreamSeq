@@ -287,6 +287,7 @@ apptainer build tetrimmer-1.5.4.sif \
     docker://quay.io/biocontainers/tetrimmer:1.5.4--hdfd78af_0
 rm -rf cache
 #### Download pfam database
+wget http://ftp.ebi.ac.uk/pub/databases/Pfam/releases/Pfam38.0/Pfam-A.hmm.gz
 
 - EDTA2 or RepeatModeler2 - create a list of repeats and use it as input to TEtrimmer  
 - manually annotate transposable elements
