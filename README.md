@@ -224,13 +224,14 @@ Rscript -e 'install.packages( "tidyverse", repos="https://cloud.r-project.org/")
 #SBATCH -c4 --mem-per-cpu=3000 --time=1:0:0
 
 PREFIX=/project/def-idjoly/ETS/software/
-export R_LIBS=$PREFIX/NLRtracker/R/$EBVERSIONR/
 
 module load \
     interproscan/5.73-104.0 \
     meme/5.5.7 \
     hmmer/3.4 \
     r-bundle-bioconductor/3.21
+
+export R_LIBS=$PREFIX/NLRtracker/R/$EBVERSIONR/
 
 $PREFIX/NLRtracker/NLRtracker.sh \
     -s sample_data/sample.fasta \
