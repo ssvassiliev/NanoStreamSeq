@@ -204,18 +204,22 @@ Module available
 4. MEME/5.2.0
 
 #### Installation:
+```
 PREFIX=/project/def-idjoly/ETS/software/
 cd $PREFIX
 git clone https://github.com/slt666666/NLRtracker
 cd NLRtracker
+```
 #### Install R libraries 
 module load r-bundle-bioconductor/3.21
 #### Location of R libraries 
+```
 mkdir -p $PREFIX/NLRtracker/R/$EBVERSIONR/
 export R_LIBS=$PREFIX/NLRtracker/R/$EBVERSIONR/
 Rscript -e 'install.packages( "tidyverse", repos="https://cloud.r-project.org/")'
-
+```
 #### Submission script:
+```
 #!/bin/bash
 #SBATCH -c4 --mem-per-cpu=3000 --time=1:0:0
 
@@ -232,7 +236,7 @@ module load \
     -s sample_data/sample.fasta \
     -c $SLURM_CPUS_PER_TASK \
     -o out_dir 
-
+```
 
 ## NLR-Annotator: https://github.com/steuernb/NLR-Annotator 
 Java - no installation needed. Load java module, clone repo and run .jar file.
@@ -242,6 +246,7 @@ Conda
 
 ## PRGminer: https://github.com/usubioinfo/PRGminer 
 #### It is CPU-only code, GPU disabled in __main.py__
+```
 PREFIX=/project/def-idjoly/ETS/software/
 cd $PREFIX
 module load python mpi4py 
@@ -249,10 +254,14 @@ virtualenv --no-download --clear env-prgminer
 source env-prgminer/bin/activate
 git clone https://github.com/navduhan/PRGminer.git
 cd PRGminer/
+```
 #### Fix python version
+```
 sed -i 's/>=3\.8,<3\.11/>=3.8,<3.12/g' setup.py
 cd PRGminer/models
+```
 #### Download models
+```
 rm *.h5
 wget https://github.com/usubioinfo/PRGminer/raw/refs/heads/main/PRGminer/models/prgminer_phase1.h5
 wget https://github.com/usubioinfo/PRGminer/raw/refs/heads/main/PRGminer/models/prgminer_phase2.h5
@@ -260,8 +269,9 @@ wget https://github.com/usubioinfo/PRGminer/raw/refs/heads/main/PRGminer/models/
 cd $PREFIX/PRGminer
 pip install msgpack tensorflow==2.15.1
 pip install .
-
+```
 #### Test
+```
 #!/bin/bash
 #SBATCH -c2 --mem-per-cpu=3000 --time=1:0:0
 
@@ -270,9 +280,10 @@ source $PREFIX/env-prgminer/bin/activate
 
 cd $PREFIX/PRGminer/tests/test_data/
 PRGminer -i sample.fasta -od results_phase1 -l Phase1
+```
 
 ## Resistify: https://github.com/SwiftSeal/resistify
-
+```
 APPTAINER_CACHEDIR=./
 export APPTAINER_CACHEDIR
 apptainer build resistify-1.3.0.sif \
@@ -280,7 +291,7 @@ apptainer build resistify-1.3.0.sif \
 rm -rf cache
 
 ## TEtrimmer https://github.com/qjiangzhao/TEtrimmer
-
+```
 APPTAINER_CACHEDIR=./
 export APPTAINER_CACHEDIR
 apptainer build tetrimmer-1.5.4.sif \
@@ -288,15 +299,17 @@ apptainer build tetrimmer-1.5.4.sif \
 rm -rf cache
 #### Download pfam database
 wget http://ftp.ebi.ac.uk/pub/databases/Pfam/releases/Pfam38.0/Pfam-A.hmm.gz
-
+```
 - EDTA2 or RepeatModeler2 - create a list of repeats and use it as input to TEtrimmer  
 - manually annotate transposable elements
 
+```
 APPTAINER_CACHEDIR=./
 export APPTAINER_CACHEDIR
 apptainer build EDTA-2.2.2.sif \
     docker://quay.io/biocontainers/edta:2.2.2--hdfd78af_1
 rm -rf cache
+```
 
 ## DRAGO-API https://github.com/sequentiabiotech/DRAGO-API
 Shell script to query DRAGO server.
@@ -306,3 +319,24 @@ Shell script to query DRAGO server.
 
 minimap2 -ax map-ont host.fa reads.fastq | samtools view -b -f 4 - | samtools fastq - > clean.fastq
 
+
+
+The issue is caused by the ACL on the beluga-ddRAD directory.
+Even though the standard permissions show full access for the group (rwx), the ACL currently does not give execute permission to the group, which is required to enter the directory:
+```
+[salinger@narval1 def-frasiert]$ getfacl beluga-ddRAD/
+# file: beluga-ddRAD/
+# owner: frasiert
+# group: def-frasiert
+# flags: -s-
+user::rwx
+user:salinger:rwx
+group::rw-
+mask::rwx
+other::rwx
+default:user::rwx
+default:user:salinger:rwx
+default:group::rw-
+default:mask::rwx
+default:other::rwx
+```
