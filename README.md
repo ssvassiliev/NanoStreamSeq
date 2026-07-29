@@ -232,7 +232,7 @@ module load \
     hmmer/3.4 \
     r-bundle-bioconductor/3.21
 
-./NLRtracker.sh \
+$PREFIX/NLRtracker/NLRtracker.sh \
     -s sample_data/sample.fasta \
     -c $SLURM_CPUS_PER_TASK \
     -o out_dir 
