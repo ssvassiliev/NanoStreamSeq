@@ -321,23 +321,3 @@ Shell script to query DRAGO server.
 minimap2 -ax map-ont host.fa reads.fastq | samtools view -b -f 4 - | samtools fastq - > clean.fastq
 
 
-
-The issue is caused by the ACL on the beluga-ddRAD directory.
-Even though the standard permissions show full access for the group (rwx), the ACL currently does not give execute permission to the group, which is required to enter the directory:
-```
-[salinger@narval1 def-frasiert]$ getfacl beluga-ddRAD/
-# file: beluga-ddRAD/
-# owner: frasiert
-# group: def-frasiert
-# flags: -s-
-user::rwx
-user:salinger:rwx
-group::rw-
-mask::rwx
-other::rwx
-default:user::rwx
-default:user:salinger:rwx
-default:group::rw-
-default:mask::rwx
-default:other::rwx
-```
